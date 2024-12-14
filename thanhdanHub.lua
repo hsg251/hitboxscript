@@ -1,18 +1,18 @@
---Đây là script hitbox khiến kẻ địch phải đứng im nếu bạn ấn bật mở hitbox 
---Lưu ý: Bật lên giết được kẻ địch rồi thì phải tắt hitbox 
---Thanks for using
+-- Dịch vụ cần thiết
 local UIS = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local enabled = false -- Trạng thái bật/tắt
 local hitboxSize = Vector3.new(10, 10, 10) -- Kích thước hitbox mặc định
 
+-- Tạo UI chính
 local screenGui = Instance.new("ScreenGui")
 local toggleButton = Instance.new("TextButton")
 local titleLabel = Instance.new("TextLabel")
 local sizeSlider = Instance.new("TextBox")
+local thankYouLabel = Instance.new("TextLabel")
 
--- Tạo UI
+-- Gán UI vào CoreGui
 screenGui.Parent = game.CoreGui
 
 -- Cấu hình tiêu đề
@@ -46,6 +46,24 @@ sizeSlider.TextSize = 18
 sizeSlider.PlaceholderText = "Nhập kích thước"
 sizeSlider.ClearTextOnFocus = true
 sizeSlider.Parent = screenGui
+
+-- Hiển thị thông báo cảm ơn
+thankYouLabel.Size = UDim2.new(0, 300, 0, 100)
+thankYouLabel.Position = UDim2.new(0.5, -150, 0.5, -50) -- Ở giữa màn hình
+thankYouLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+thankYouLabel.BackgroundTransparency = 0.5
+thankYouLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+thankYouLabel.Text = "Cảm ơn!"
+thankYouLabel.Font = Enum.Font.SourceSansBold
+thankYouLabel.TextSize = 36
+thankYouLabel.Parent = screenGui
+
+-- Tự động xóa thông báo sau 3 giây
+task.delay(3, function()
+    if thankYouLabel then
+        thankYouLabel:Destroy()
+    end
+end)
 
 -- Hàm điều chỉnh kích thước hitbox
 local function adjustHitbox(player, size)
