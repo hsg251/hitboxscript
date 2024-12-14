@@ -1,20 +1,21 @@
--- script này là script hitbox bạn có thể sử dụng trong tất cả các game:3
--- đặc biệt là: murderer vs sheriff; murder mystery 2
+--Đây là script hitbox khiến kẻ địch phải đứng im nếu bạn ấn bật mở hitbox 
+--Lưu ý: Bật lên giết được kẻ địch rồi thì phải tắt hitbox 
+--Thanks for using
 local UIS = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-local enabled = false -- Toggle state
-local hitboxSize = Vector3.new(10, 10, 10) -- Default hitbox size
+local enabled = false -- Trạng thái bật/tắt
+local hitboxSize = Vector3.new(10, 10, 10) -- Kích thước hitbox mặc định
 
 local screenGui = Instance.new("ScreenGui")
 local toggleButton = Instance.new("TextButton")
 local titleLabel = Instance.new("TextLabel")
 local sizeSlider = Instance.new("TextBox")
 
--- Create UI
+-- Tạo UI
 screenGui.Parent = game.CoreGui
 
--- Configure Title
+-- Cấu hình tiêu đề
 titleLabel.Size = UDim2.new(0, 200, 0, 50)
 titleLabel.Position = UDim2.new(0, 10, 0, 10)
 titleLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
@@ -24,56 +25,56 @@ titleLabel.Font = Enum.Font.SourceSansBold
 titleLabel.TextSize = 20
 titleLabel.Parent = screenGui
 
--- Adjust button position below title
+-- Nút bật/tắt
 toggleButton.Size = UDim2.new(0, 150, 0, 50)
 toggleButton.Position = UDim2.new(0, 10, 0, 70)
 toggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggleButton.Text = "Toggle Hitbox"
+toggleButton.Text = "Bật/Tắt Hitbox"
 toggleButton.Font = Enum.Font.SourceSans
 toggleButton.TextSize = 18
 toggleButton.Parent = screenGui
 
--- Configure Size Input (for mobile touch input)
+-- Ô nhập kích thước
 sizeSlider.Size = UDim2.new(0, 150, 0, 30)
 sizeSlider.Position = UDim2.new(0, 10, 0, 130)
 sizeSlider.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 sizeSlider.TextColor3 = Color3.fromRGB(255, 255, 255)
-sizeSlider.Text = "10" -- Default size
+sizeSlider.Text = "10" -- Kích thước mặc định
 sizeSlider.Font = Enum.Font.SourceSans
 sizeSlider.TextSize = 18
-sizeSlider.PlaceholderText = "Enter size"
+sizeSlider.PlaceholderText = "Nhập kích thước"
 sizeSlider.ClearTextOnFocus = true
 sizeSlider.Parent = screenGui
 
--- Function to adjust hitbox size
+-- Hàm điều chỉnh kích thước hitbox
 local function adjustHitbox(player, size)
     local character = player.Character
     if character and character:FindFirstChild("HumanoidRootPart") then
         local rootPart = character.HumanoidRootPart
         rootPart.Size = size
-        rootPart.Transparency = 0.5 -- Optional: make the hitbox visible
+        rootPart.Transparency = 0.5 -- Tùy chọn: làm hitbox dễ nhìn thấy
         rootPart.Massless = true
         rootPart.CanCollide = false
     end
 end
 
--- Function to reset hitbox size
+-- Hàm đặt lại kích thước hitbox
 local function resetHitbox(player)
     local character = player.Character
     if character and character:FindFirstChild("HumanoidRootPart") then
         local rootPart = character.HumanoidRootPart
-        rootPart.Size = Vector3.new(2, 2, 1) -- Default size
-        rootPart.Transparency = 0 -- Reset visibility
+        rootPart.Size = Vector3.new(2, 2, 1) -- Kích thước mặc định
+        rootPart.Transparency = 0 -- Đặt lại độ hiển thị
         rootPart.Massless = false
         rootPart.CanCollide = true
     end
 end
 
--- Toggle function
+-- Hàm bật/tắt hitbox
 local function toggleHitbox()
     enabled = not enabled
-    toggleButton.Text = enabled and "Disable Hitbox" or "Enable Hitbox"
+    toggleButton.Text = enabled and "Tắt Hitbox" or "Bật Hitbox"
     if enabled then
         for _, player in pairs(Players:GetPlayers()) do
             if player ~= LocalPlayer then
@@ -89,27 +90,40 @@ local function toggleHitbox()
     end
 end
 
--- Update hitbox size from input
+-- Cập nhật kích thước hitbox từ input
 sizeSlider.FocusLost:Connect(function(enterPressed)
     if enterPressed then
         local newSize = tonumber(sizeSlider.Text)
         if newSize and newSize > 0 then
             hitboxSize = Vector3.new(newSize, newSize, newSize)
-            print("Hitbox size updated to:", hitboxSize)
+            print("Kích thước hitbox đã cập nhật:", hitboxSize)
         else
-            sizeSlider.Text = tostring(hitboxSize.X) -- Reset to current size if input is invalid
+            sizeSlider.Text = tostring(hitboxSize.X) -- Đặt lại kích thước hiện tại nếu input không hợp lệ
         end
     end
 end)
 
--- Connect button tap to toggle function
+-- Kết nối nút nhấn với hàm bật/tắt
 toggleButton.MouseButton1Click:Connect(toggleHitbox)
 
--- Automatically reset hitboxes when a player leaves
+-- Tự động đặt lại hitbox khi người chơi rời khỏi
 Players.PlayerRemoving:Connect(function(player)
     if player ~= LocalPlayer then
         resetHitbox(player)
     end
 end)
 
-print("Hitbox script đã tải. Sử dụng UI để chuyển đổi và điều chỉnh kích thước.")
+-- Hàm đổi màu ngẫu nhiên
+local function randomColor()
+    return Color3.fromRGB(math.random(0, 255), math.random(0, 255), math.random(0, 255))
+end
+
+-- Vòng lặp đổi màu tiêu đề
+task.spawn(function()
+    while true do
+        titleLabel.TextColor3 = randomColor() -- Đổi màu chữ
+        task.wait(1) -- Đổi màu mỗi 1 giây
+    end
+end)
+
+print("Script hitbox đã tải. Sử dụng giao diện để bật/tắt và điều chỉnh kích thước.")
