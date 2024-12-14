@@ -1,15 +1,16 @@
--- Dịch vụ cần thiết
 local UIS = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local enabled = false -- Trạng thái bật/tắt
 local hitboxSize = Vector3.new(10, 10, 10) -- Kích thước hitbox mặc định
+local countdownTime = 2 -- Thời gian mặc định (2 giây)
 
 -- Tạo UI chính
 local screenGui = Instance.new("ScreenGui")
 local toggleButton = Instance.new("TextButton")
 local titleLabel = Instance.new("TextLabel")
 local sizeSlider = Instance.new("TextBox")
+local countdownSlider = Instance.new("TextBox") -- Ô nhập cho thời gian đếm ngược
 local thankYouLabel = Instance.new("TextLabel")
 
 -- Gán UI vào CoreGui
@@ -30,7 +31,7 @@ toggleButton.Size = UDim2.new(0, 150, 0, 50)
 toggleButton.Position = UDim2.new(0, 10, 0, 70)
 toggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggleButton.Text = "Bật/Tắt Hitbox"
+toggleButton.Text = "Bật Hitbox"
 toggleButton.Font = Enum.Font.SourceSans
 toggleButton.TextSize = 18
 toggleButton.Parent = screenGui
@@ -46,6 +47,18 @@ sizeSlider.TextSize = 18
 sizeSlider.PlaceholderText = "Nhập kích thước"
 sizeSlider.ClearTextOnFocus = true
 sizeSlider.Parent = screenGui
+
+-- Ô nhập thời gian đếm ngược
+countdownSlider.Size = UDim2.new(0, 150, 0, 30)
+countdownSlider.Position = UDim2.new(0, 10, 0, 170)
+countdownSlider.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+countdownSlider.TextColor3 = Color3.fromRGB(255, 255, 255)
+countdownSlider.Text = "2" -- Thời gian mặc định
+countdownSlider.Font = Enum.Font.SourceSans
+countdownSlider.TextSize = 18
+countdownSlider.PlaceholderText = "Nhập giây"
+countdownSlider.ClearTextOnFocus = true
+countdownSlider.Parent = screenGui
 
 -- Hiển thị thông báo cảm ơn
 thankYouLabel.Size = UDim2.new(0, 300, 0, 100)
@@ -92,14 +105,27 @@ end
 -- Hàm bật/tắt hitbox
 local function toggleHitbox()
     enabled = not enabled
-    toggleButton.Text = enabled and "Tắt Hitbox" or "Bật Hitbox"
     if enabled then
+        toggleButton.Text = "Tắt sau " .. countdownTime .. "s"
+        -- Bật hitbox cho tất cả người chơi
         for _, player in pairs(Players:GetPlayers()) do
             if player ~= LocalPlayer then
                 adjustHitbox(player, hitboxSize)
             end
         end
+        -- Đếm ngược theo thời gian tùy chỉnh và tự tắt
+        task.delay(countdownTime, function()
+            toggleButton.Text = "Bật Hitbox" -- Đổi lại tên nút sau khi hết thời gian
+            -- Tắt hitbox cho tất cả người chơi
+            for _, player in pairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer then
+                    resetHitbox(player)
+                end
+            end
+        end)
     else
+        toggleButton.Text = "Bật Hitbox"
+        -- Tắt hitbox ngay lập tức khi nhấn nút
         for _, player in pairs(Players:GetPlayers()) do
             if player ~= LocalPlayer then
                 resetHitbox(player)
@@ -117,6 +143,19 @@ sizeSlider.FocusLost:Connect(function(enterPressed)
             print("Kích thước hitbox đã cập nhật:", hitboxSize)
         else
             sizeSlider.Text = tostring(hitboxSize.X) -- Đặt lại kích thước hiện tại nếu input không hợp lệ
+        end
+    end
+end)
+
+-- Cập nhật thời gian đếm ngược từ input
+countdownSlider.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local newCountdownTime = tonumber(countdownSlider.Text)
+        if newCountdownTime and newCountdownTime > 0 then
+            countdownTime = newCountdownTime
+            print("Thời gian đếm ngược đã cập nhật:", countdownTime)
+        else
+            countdownSlider.Text = tostring(countdownTime) -- Đặt lại thời gian hiện tại nếu input không hợp lệ
         end
     end
 end)
