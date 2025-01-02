@@ -3,6 +3,7 @@
 -- Mình là hacker số 1 châu á
 local UIS = game:GetService("UserInputService")
 local Players = game:GetService("Players")
+local SoundService = game:GetService("SoundService")
 local LocalPlayer = Players.LocalPlayer
 local enabled = false -- Trạng thái bật/tắt
 local hitboxSize = Vector3.new(10, 10, 10) -- Kích thước hitbox mặc định
@@ -16,6 +17,7 @@ local toggleButton = Instance.new("TextButton")
 local sizeSlider = Instance.new("TextBox")
 local countdownSlider = Instance.new("TextBox")
 local menuButton = Instance.new("ImageButton")
+local musicButton = Instance.new("TextButton")
 
 -- Đặt UI vào PlayerGui nếu executor không cho truy cập CoreGui
 local success, err = pcall(function()
@@ -33,8 +35,8 @@ menuButton.Image = "rbxassetid://118921567222422"
 menuButton.Parent = screenGui
 
 -- Cấu hình menu chính
-mainFrame.Size = UDim2.new(0, 250, 0, 300)
-mainFrame.Position = UDim2.new(1, -310, 0.5, -150) -- Bên phải, gần nút mở menu
+mainFrame.Size = UDim2.new(0, 250, 0, 450) -- Adjusted height to fit additional elements
+mainFrame.Position = UDim2.new(1, -310, 0.5, -225) -- Bên phải, gần nút mở menu
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 mainFrame.BorderSizePixel = 0
 mainFrame.Visible = false -- Ẩn menu khi bắt đầu
@@ -108,6 +110,63 @@ countdownSlider.PlaceholderText = "Thời gian"
 countdownSlider.ClearTextOnFocus = true
 countdownSlider.Parent = mainFrame
 
+-- Nút nghe nhạc
+musicButton.Size = UDim2.new(1, -20, 0, 50)
+musicButton.Position = UDim2.new(0, 10, 0, 240)
+musicButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+musicButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+musicButton.Text = "Nghe nhạc Chill"
+musicButton.Font = Enum.Font.SourceSans
+musicButton.TextSize = 18
+musicButton.Parent = mainFrame
+
+-- Menu lựa chọn nhạc
+local musicSelectionFrame = Instance.new("Frame")
+musicSelectionFrame.Size = UDim2.new(0, 300, 0, 300)
+musicSelectionFrame.Position = UDim2.new(0.5, -150, 0.5, -150)
+musicSelectionFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+musicSelectionFrame.BorderSizePixel = 0
+musicSelectionFrame.Visible = false
+musicSelectionFrame.Parent = screenGui
+
+-- Danh sách bài hát
+local songs = {
+    {"Lo-fi Chill A", "rbxassetid://9043887091"},
+    {"Sunset Chill (Bed Version)", "rbxassetid://9046862941"},
+    {"Sad / Chill Beat", "rbxassetid://1137575800"},
+    {"Chill LoFi Hip-Hop Music", "rbxassetid://2023642240"},
+    {"Chill Day", "rbxassetid://4552200821"}
+}
+
+-- Tạo các nút lựa chọn nhạc
+for i, song in ipairs(songs) do
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, -20, 0, 40)
+    button.Position = UDim2.new(0, 10, 0, (i - 1) * 50 + 10)
+    button.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.Text = song[1]
+    button.Font = Enum.Font.SourceSans
+    button.TextSize = 18
+    button.Parent = musicSelectionFrame
+
+    button.MouseButton1Click:Connect(function()
+        musicSelectionFrame.Visible = false
+        local sound = Instance.new("Sound")
+        sound.SoundId = song[2]
+        sound.Volume = 0.5
+        sound.Looped = true
+        sound.Parent = SoundService
+        sound:Play()
+        musicSelectionFrame.Visible = false -- Ẩn menu nhạc khi chọn bài hát
+    end)
+end
+
+-- Hiện menu nhạc khi nhấn nút
+musicButton.MouseButton1Click:Connect(function()
+    musicSelectionFrame.Visible = true
+end)
+
 -- Hàm điều chỉnh kích thước hitbox
 local function adjustHitbox(player, size)
     local character = player.Character
@@ -163,41 +222,3 @@ local function toggleHitbox()
                         end
                     end
                 end
-            end)
-        end
-    end
-end
-
--- Cập nhật kích thước hitbox từ input
-sizeSlider.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        local newSize = tonumber(sizeSlider.Text)
-        if newSize and newSize > 0 then
-            hitboxSize = Vector3.new(newSize, newSize, newSize)
-        else
-            sizeSlider.Text = tostring(hitboxSize.X)
-        end
-    end
-end)
-
--- Cập nhật thời gian đếm ngược từ input
-countdownSlider.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        local newCountdownTime = tonumber(countdownSlider.Text)
-        if newCountdownTime and newCountdownTime > 0 then
-            countdownTime = newCountdownTime
-        else
-            countdownSlider.Text = tostring(countdownTime)
-        end
-    end
-end)
-
--- Kết nối nút nhấn với hàm bật/tắt
-toggleButton.MouseButton1Click:Connect(toggleHitbox)
-
--- Hàm mở/đóng menu
-menuButton.MouseButton1Click:Connect(function()
-    mainFrame.Visible = not mainFrame.Visible
-end)
-
-print("Hello-World")
