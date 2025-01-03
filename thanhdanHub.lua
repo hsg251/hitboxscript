@@ -110,115 +110,55 @@ countdownSlider.PlaceholderText = "Thời gian"
 countdownSlider.ClearTextOnFocus = true
 countdownSlider.Parent = mainFrame
 
--- Nút nghe nhạc
-musicButton.Size = UDim2.new(1, -20, 0, 50)
-musicButton.Position = UDim2.new(0, 10, 0, 240)
-musicButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-musicButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-musicButton.Text = "Nghe nhạc Chill"
-musicButton.Font = Enum.Font.SourceSans
-musicButton.TextSize = 18
-musicButton.Parent = mainFrame
-
--- Menu lựa chọn nhạc
-local musicSelectionFrame = Instance.new("Frame")
-musicSelectionFrame.Size = UDim2.new(0, 300, 0, 300)
-musicSelectionFrame.Position = UDim2.new(0.5, -150, 0.5, -150)
-musicSelectionFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-musicSelectionFrame.BorderSizePixel = 0
-musicSelectionFrame.Visible = false
-musicSelectionFrame.Parent = screenGui
-
--- Danh sách bài hát
-local songs = {
-    {"Lo-fi Chill A", "rbxassetid://9043887091"},
-    {"Sunset Chill (Bed Version)", "rbxassetid://9046862941"},
-    {"Sad / Chill Beat", "rbxassetid://1137575800"},
-    {"Chill LoFi Hip-Hop Music", "rbxassetid://2023642240"},
-    {"Chill Day", "rbxassetid://4552200821"}
-}
-
--- Tạo các nút lựa chọn nhạc
-for i, song in ipairs(songs) do
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, -20, 0, 40)
-    button.Position = UDim2.new(0, 10, 0, (i - 1) * 50 + 10)
-    button.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.Text = song[1]
-    button.Font = Enum.Font.SourceSans
-    button.TextSize = 18
-    button.Parent = musicSelectionFrame
-
-    button.MouseButton1Click:Connect(function()
-        musicSelectionFrame.Visible = false
-        local sound = Instance.new("Sound")
-        sound.SoundId = song[2]
-        sound.Volume = 0.5
-        sound.Looped = true
-        sound.Parent = SoundService
-        sound:Play()
-        musicSelectionFrame.Visible = false -- Ẩn menu nhạc khi chọn bài hát
-    end)
-end
-
--- Hiện menu nhạc khi nhấn nút
-musicButton.MouseButton1Click:Connect(function()
-    musicSelectionFrame.Visible = true
-end)
-
--- Hàm điều chỉnh kích thước hitbox
+-- Xử lý nút toggle hitbox
 local function adjustHitbox(player, size)
     local character = player.Character
     if character and character:FindFirstChild("HumanoidRootPart") then
         local rootPart = character.HumanoidRootPart
         rootPart.Size = size
         rootPart.Transparency = 0.5
-        rootPart.Massless = true
         rootPart.CanCollide = false
     end
 end
 
--- Hàm đặt lại kích thước hitbox
 local function resetHitbox(player)
     local character = player.Character
     if character and character:FindFirstChild("HumanoidRootPart") then
         local rootPart = character.HumanoidRootPart
         rootPart.Size = Vector3.new(2, 2, 1)
         rootPart.Transparency = 0
-        rootPart.Massless = false
         rootPart.CanCollide = true
     end
 end
 
--- Hàm bật/tắt hitbox
-local function toggleHitbox()
-    if enabled then
-        enabled = false
-        toggleButton.Text = "Bật Hitbox"
-        for _, player in pairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer then
+toggleButton.MouseButton1Click:Connect(function()
+    enabled = not enabled
+    toggleButton.Text = enabled and "Tắt Hitbox" or "Bật Hitbox"
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            if enabled then
+                adjustHitbox(player, hitboxSize)
+            else
                 resetHitbox(player)
             end
         end
-    else
-        enabled = true
-        toggleButton.Text = "Tắt Hitbox"
-        for _, player in pairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer then
-                adjustHitbox(player, hitboxSize)
-            end
-        end
+    end
+end)
 
-        -- Nếu countdownTime không phải là 0, tự động tắt sau thời gian đếm ngược
-        if countdownTime > 0 then
-            task.delay(countdownTime, function()
-                if enabled then
-                    enabled = false
-                    toggleButton.Text = "Bật Hitbox"
-                    for _, player in pairs(Players:GetPlayers()) do
-                        if player ~= LocalPlayer then
-                            resetHitbox(player)
-                        end
-                    end
-                end
+sizeSlider.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local newSize = tonumber(sizeSlider.Text)
+        if newSize then
+            hitboxSize = Vector3.new(newSize, newSize, newSize)
+        end
+    end
+end)
+
+countdownSlider.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local newTime = tonumber(countdownSlider.Text)
+        if newTime then
+            countdownTime = newTime
+        end
+    end
+end)
